@@ -6,7 +6,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nepali_date_picker/nepali_date_picker.dart';
 import 'package:intl/intl.dart';
-
+import 'package:menstrual_period_tracker/data/database.dart';
 import 'input2.dart';
 
 class Picker extends StatefulWidget {
@@ -100,9 +100,9 @@ class _PickerState extends State<Picker> {
             style: TextStyle(fontSize: 24),
           ),
           GestureDetector(
-            onTap: () {
-              createUser(
-                  DateFormat('yyyy-MM-dd').format(_selectedDate), widget.email);
+            onTap: () { addPeriodDate(widget.email, DateFormat('yyyy-MM-dd').format(_selectedDate));
+              // createUser(
+              //     DateFormat('yyyy-MM-dd').format(_selectedDate), widget.email);
               Get.to(() => Days(widget.email));
             },
             child: Container(
@@ -132,11 +132,19 @@ class _PickerState extends State<Picker> {
     );
   }
 }
+// Future createUser(String dateValue, String? email) async {
+//   final docUser =
+//   FirebaseFirestore.instance.collection('User Details').doc(email);
+//
+//    final firstData = {'Initial Period Date': dateValue};
+//   addPeriodDate(email, dateValue);
+//   await docUser.set(firstData);
+// }
 
-Future createUser(String dateValue, String? email) async {
-  final docUser =
-      FirebaseFirestore.instance.collection('User Details').doc(email);
-
-  final firstData = {'Period Date': dateValue};
-  await docUser.set(firstData);
-}
+// Future createUser(String dateValue, String? email) async {
+//   final docUser =
+//       FirebaseFirestore.instance.collection('User Details').doc(email);
+//
+//   final firstData = {'Period Date': dateValue};
+//   await docUser.set(firstData);
+// }

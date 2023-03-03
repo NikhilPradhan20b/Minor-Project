@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
+import 'package:get_storage/get_storage.dart';
 import 'package:menstrual_period_tracker/data/database.dart';
 
 import 'retrive/retrievedata.dart';
@@ -28,8 +29,9 @@ class MyApps extends StatefulWidget {
 
 class _MyAppsState extends State<MyApps> {
   NepaliDateTime _dateTime = NepaliDateTime.now();
-  void _showdatepicker(String? periodDate) async {
-    await showDatePicker(
+  void _showdatepicker(String Datevalue) async {
+
+    await showMaterialDatePicker(
       context: context,
       initialDate: NepaliDateTime.now(),
       firstDate: NepaliDateTime(2078),
@@ -44,20 +46,23 @@ class _MyAppsState extends State<MyApps> {
         _dateTime = updatevalue!;
         NepaliUnicode.convert('value');
       });
+
       //'${now.year}-${now.month}-${now.day}'
       NepaliDateTime? date2;
-      if (periodDate != null) {
-        date2 = NepaliDateTime.parse(periodDate);
-      } else {}
+      //if (Datevalue != null) {
+      date2 = NepaliDateTime.parse(Datevalue);
+      //} else {}
 
       NepaliDateTime now = NepaliDateTime.now();
-      Duration difference = _dateTime.difference(date2!);
+      Duration difference = _dateTime.difference(date2);
       int cycleLength = difference.inDays;
       print(
           'The value of date2! is ${date2.year} - ${date2.month} - ${date2.day}');
       print('The value of cycleLength is $cycleLength');
       addCycleData(
           widget.email, cycleLength, '${now.year}-${now.month}-${now.day}');
+      //Below Function just Check Garna Ko lagi Banayeko
+      addPeriodDate(widget.email, '${_dateTime.year}-${_dateTime.month}-${_dateTime.day}');
     });
   }
 
@@ -107,7 +112,7 @@ class _MyAppsState extends State<MyApps> {
                                 children: [
                                   Padding(
                                     padding:
-                                        const EdgeInsets.fromLTRB(0, 0, 0, 8),
+                                    const EdgeInsets.fromLTRB(0, 0, 0, 8),
                                     child: Text(
                                       "महिनावारी आउन बाँकी दिन",
                                       style: GoogleFonts.getFont(
@@ -130,7 +135,7 @@ class _MyAppsState extends State<MyApps> {
                                 ],
                               );
                             } else {
-                              return Text('Something is wrong');
+                              return Text('');
                             }
                           }), //Text
                     ),
@@ -168,11 +173,13 @@ class _MyAppsState extends State<MyApps> {
                               style: ElevatedButton.styleFrom(
                                 primary: Color.fromRGBO(39, 3, 27, 0.686),
                               ),
-                              onPressed: () async {
-                                // _showdatepicker(user.periodDate);
-                                // List<Event> s =
-                                //     await getEventsFromFirestore(widget.email);
-                                // s[1].printEvent();
+                              onPressed: () async{
+
+                                //String Datevalues = retrievePeriodDates(widget.email).toString();
+                                final String periodDate = await retrievePeriodDates2(widget.email);
+                                // print(periodDate);
+                                _showdatepicker(periodDate);
+                                //retrievePeriodDates(widget.email);
                               },
                               child: Center(
                                 child: Text(
@@ -199,7 +206,7 @@ class _MyAppsState extends State<MyApps> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor:
-            Color.fromARGB(255, 66, 13, 106), // set background color
+        Color.fromARGB(255, 66, 13, 106), // set background color
         type: BottomNavigationBarType.fixed, // set type to fixed
         selectedItemColor: Colors.white, // set selected item color
         unselectedItemColor: Colors.grey[400], // set unselected item color
@@ -278,7 +285,7 @@ class User {
     return {
       'Age': age,
       'Cycle Length': cycleLength,
-      'Period Date': periodDate,
+      'Initial Period Date': periodDate,
       'Period Length': periodLength,
     };
   }
@@ -287,7 +294,7 @@ class User {
     return User(
         age: details['Age'],
         cycleLength: details['Cycle Length'],
-        periodDate: details['Period Date'],
+        periodDate: details['Inital Period Date'],
         periodLength: details['Period Length']);
   }
 }
@@ -296,14 +303,54 @@ Stream<List<User>> readUsers() => FirebaseFirestore.instance
     .collection('User Details')
     .snapshots()
     .map((snapshot) =>
-        snapshot.docs.map((doc) => User.fromDatabase(doc.data())).toList());
+    snapshot.docs.map((doc) => User.fromDatabase(doc.data())).toList());
 
 Future<User?> readUser(String? email) async {
   final docUser =
-      FirebaseFirestore.instance.collection('User Details').doc(email);
+  FirebaseFirestore.instance.collection('User Details').doc(email);
   final snapshot = await docUser.get();
 
   if (snapshot.exists) {
     return User.fromDatabase(snapshot.data()!);
   }
 }
+// Future<String> retrievePeriodLength(String? email) async {
+//   final FirebaseFirestore _db = FirebaseFirestore.instance;
+//   final DocumentReference<Map<String, dynamic>> documentReference = _db
+//       .collection('User Details').doc(email);
+//   final DocumentSnapshot<
+//       Map<String, dynamic>> snapshot = await documentReference.get();
+//
+//   if (snapshot.exists) {
+//     final Map<String, dynamic> data = snapshot.data()!;
+//     final Map<String, dynamic> periodDateData = data['Period Date'];
+//     print('User name is: $name');
+//     return name;
+//   } else {
+//     print('User not found');
+//   }
+//   return '';
+// }
+// Future<List<String>> retrievePeriodDates(String? email) async {
+//   final FirebaseFirestore _db = FirebaseFirestore.instance;
+//   final DocumentReference<Map<String, dynamic>> documentReference =
+//   _db.collection('User Details').doc(email);
+//   final DocumentSnapshot<Map<String, dynamic>> snapshot =
+//   await documentReference.get();
+//
+//   final Map<String, String> periodDate = {};
+//   if (snapshot.exists) {
+//     final Map<String, dynamic> data = snapshot.data()!;
+//     final Map<String, dynamic> periodDateData = data['Period Date'];
+//     periodDateData.forEach((key, value) {
+//       periodDate[key] = value as String;
+//     });
+// //
+//     List<String> dates = periodDate.values.toList();
+//     // print(dates);
+//     return dates;
+//   }
+//   List<String> a = ['a', 'b'];
+//   return a;
+// }
+// print(Period Date + predicted length - now

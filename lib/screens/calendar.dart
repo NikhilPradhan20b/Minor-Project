@@ -334,13 +334,13 @@ Future<List<String>> retrievePeriodDates(String? email) async {
   final Map<String, String> periodDate = {};
   if (snapshot.exists) {
     final Map<String, dynamic> data = snapshot.data()!;
-    final Map<String, dynamic> periodDateData = data['perioddate'];
+    final Map<String, dynamic> periodDateData = data['Period Date'];
     periodDateData.forEach((key, value) {
       periodDate[key] = value as String;
     });
 //
     List<String> dates = periodDate.values.toList();
-    print(dates);
+    // print(dates);
     return dates;
   }
   List<String> a = ['a', 'b'];

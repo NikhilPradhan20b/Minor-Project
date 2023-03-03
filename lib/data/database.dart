@@ -21,26 +21,48 @@ void addPeriodDate(String? userId, String formattedDate) {
       .set(periodDate, SetOptions(merge: true));
 }
 
-// Future<Map<String, String>> retrievePeriodDates(String? email) async {
-//   final FirebaseFirestore _db = FirebaseFirestore.instance;
-//   final DocumentReference<Map<String, dynamic>> documentReference =
-//       _db.collection('User Details').doc(email);
-//   final DocumentSnapshot<Map<String, dynamic>> snapshot =
-//       await documentReference.get();
+Future<String> retrievePeriodDates2(String? email) async {
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final DocumentReference<Map<String, dynamic>> documentReference =
+  _db.collection('User Details').doc(email);
+  final DocumentSnapshot<Map<String, dynamic>> snapshot =
+  await documentReference.get();
 
-//   final Map<String, String> periodDate = {};
-//   if (snapshot.exists) {
-//     final Map<String, dynamic> data = snapshot.data()!;
-//     final Map<String, dynamic> periodDateData = data['Period Date'];
-//     periodDateData.forEach((key, value) {
-//       periodDate[key] = value as String;
-//     });
-//     //List <String>date = periodDate.values.toList();
-//     //print(date);
-//   }
+  final Map<String, String> periodDate = {};
+  if (snapshot.exists) {
+    final Map<String, dynamic> data = snapshot.data()!;
+    final Map<String, dynamic> periodDateData = data['Period Date'];
+    periodDateData.forEach((key, value) {
+      periodDate[key] = value as String;
+    });
+    List <String>date = periodDate.values.toList();
+    // print(date[0]);
+    return date[0];
+  }
 
-//   return periodDate;
-// }
+  return '';
+}
+Future<String> retrievePeriodLength(String? email) async {
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final DocumentReference<Map<String, dynamic>> documentReference =
+  _db.collection('User Details').doc(email);
+  final DocumentSnapshot<Map<String, dynamic>> snapshot =
+  await documentReference.get();
+
+  final Map<String, String> periodDate = {};
+  if (snapshot.exists) {
+    final Map<String, dynamic> data = snapshot.data()!;
+    final Map<String, dynamic> periodDateData = data['predictedlength'];
+    periodDateData.forEach((key, value) {
+      periodDate[key] = value as String;
+    });
+    List <String>date = periodDate.values.toList();
+    // print(date[0]);
+    return date[0];
+  }
+
+  return '';
+}
 
 Future<List<String>> retrievePeriodDates(String? email) async {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
