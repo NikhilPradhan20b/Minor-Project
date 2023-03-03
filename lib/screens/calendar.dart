@@ -140,110 +140,113 @@ class CalendarDatePickerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<String>>(
-      future:retrievePeriodDates(email),
-      builder: (context,AsyncSnapshot<List<String>> snapshot) {
+        future: retrievePeriodDates(email),
+        builder: (context, AsyncSnapshot<List<String>> snapshot) {
+          if (snapshot.hasData) {
+            List<String> periodDates = snapshot.data!;
 
-        if (snapshot.hasData){
-          List<String> periodDates = snapshot.data!;
-
-          return FutureBuilder <String>(
-              future: retrievePeriodLength(email),
-
-            builder: (context,AsyncSnapshot<String> snapshot) {
-              if (snapshot.hasData){
-               double periodlength1 = double.parse(snapshot.data!);
-               int periodlength = periodlength1.toInt();
-               List<NepaliDateTime> day =getUpdatedDates(periodDates, periodlength);
-               final List<Event> events = getevents(day);
-              return Column(
-              children: [
-                CalendarDatePicker(
-                  initialDate: NepaliDateTime.now(),
-                  firstDate: NepaliDateTime(2078),
-                  lastDate: NepaliDateTime(2090),
-                  onDateChanged: (date) => _selectedDate.value = date,
-                  dayBuilder: (dayToBuild) {
-                    return Stack(
-                      children: <Widget>[
-                        Center(
-                          child: Text(
-                            NepaliUtils().language == Language.english
-                                ? '${dayToBuild.day}'
-                                : NepaliUnicode.convert('${dayToBuild.day}'),
-                            style: Theme.of(context).textTheme.bodyText2,
+            return FutureBuilder<String>(
+                future: retrievePeriodLength(email),
+                builder: (context, AsyncSnapshot<String> snapshot) {
+                  if (snapshot.hasData) {
+                    double periodlength1 = double.parse(snapshot.data!);
+                    int periodlength = periodlength1.toInt();
+                    List<NepaliDateTime> day =
+                        getUpdatedDates(periodDates, periodlength);
+                    final List<Event> events = getevents(day);
+                    return Column(
+                      children: [
+                        CalendarDatePicker(
+                          initialDate: NepaliDateTime.now(),
+                          firstDate: NepaliDateTime(2078),
+                          lastDate: NepaliDateTime(2090),
+                          onDateChanged: (date) => _selectedDate.value = date,
+                          dayBuilder: (dayToBuild) {
+                            return Stack(
+                              children: <Widget>[
+                                Center(
+                                  child: Text(
+                                    NepaliUtils().language == Language.english
+                                        ? '${dayToBuild.day}'
+                                        : NepaliUnicode.convert(
+                                            '${dayToBuild.day}'),
+                                    style:
+                                        Theme.of(context).textTheme.bodyText2,
+                                  ),
+                                ),
+                                if (events.any((event) =>
+                                    _dayEquals(event.date, dayToBuild)))
+                                  Align(
+                                      alignment: Alignment.center,
+                                      child: Container(
+                                        width: 35,
+                                        height: 35,
+                                        decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                                width: 5.0, color: Colors.red)),
+                                      ))
+                              ],
+                            );
+                          },
+                          selectedDayDecoration: const BoxDecoration(
+                            color: Colors.deepOrange,
+                            shape: BoxShape.circle,
+                          ),
+                          todayDecoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                                colors: [Colors.yellow, Colors.orange]),
+                            shape: BoxShape.circle,
                           ),
                         ),
-                        if (events.any((event) => _dayEquals(event.date, dayToBuild)))
-                          Align(
-                              alignment: Alignment.center,
-                              child: Container(
-                                width: 35,
-                                height: 35,
-                                decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(width: 5.0, color: Colors.red)),
-                              ))
+                        Expanded(
+                          child: ValueListenableBuilder<NepaliDateTime>(
+                            valueListenable: _selectedDate,
+                            builder: (context, date, _) {
+                              Event? event;
+                              try {
+                                event = events.firstWhere(
+                                    (e) => _dayEquals(e.date, date));
+                              } on StateError {
+                                event = null;
+                              }
+
+                              if (event == null) {
+                                return const Center(
+                                  child: Text('No Period'),
+                                );
+                              } else {
+                                return const Center(
+                                  child: Text('Period'),
+                                );
+                              }
+                              // return Text("");
+                              // return ListView.separated(
+                              //   itemCount: event.eventTitles.length,
+                              //   itemBuilder: (context, index) => ListTile(
+                              //     leading: CircleAvatar(
+                              //       backgroundColor: Colors.red,
+                              //     ),
+                              //     title: Text(event!.eventTitles[index]),
+                              //     onTap: () {},
+                              //   ),
+                              //   separatorBuilder: (context, _) => const Divider(),
+                              // );
+                            },
+                          ),
+                        ),
                       ],
                     );
-                  },
-                  selectedDayDecoration: const BoxDecoration(
-                    color: Colors.deepOrange,
-                    shape: BoxShape.circle,
-                  ),
-                  todayDecoration: const BoxDecoration(
-                    gradient: LinearGradient(colors: [Colors.yellow, Colors.orange]),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                Expanded(
-                  child: ValueListenableBuilder<NepaliDateTime>(
-                    valueListenable: _selectedDate,
-                    builder: (context, date, _) {
-                      Event? event;
-                      try {
-                        event = events.firstWhere((e) => _dayEquals(e.date, date));
-
-                      } on StateError {
-                        event = null;
-                      }
-
-                      if (event == null) {
-                        return const Center(
-                          child: Text('No Period'),
-                        );
-                      }
-                      else {
-                      return const Center(
-                      child: Text('Period'),
-                        );}
-                      // return Text("");
-                      // return ListView.separated(
-                      //   itemCount: event.eventTitles.length,
-                      //   itemBuilder: (context, index) => ListTile(
-                      //     leading: CircleAvatar(
-                      //       backgroundColor: Colors.red,
-                      //     ),
-                      //     title: Text(event!.eventTitles[index]),
-                      //     onTap: () {},
-                      //   ),
-                      //   separatorBuilder: (context, _) => const Divider(),
-                      // );
-                    },
-                  ),
-                ),
-              ],
-        );
-            }else{
-                // an error occurred, display an error message
-                return Text('Error: ${snapshot.error}');}}
-          );
-      }
-        else{
-      // an error occurred, display an error message
-      return Text('Error: ${snapshot.error}');
-    }}
-    );
-
+                  } else {
+                    // an error occurred, display an error message
+                    return Text('Error: ${snapshot.error}');
+                  }
+                });
+          } else {
+            // an error occurred, display an error message
+            return Text('Error: ${snapshot.error}');
+          }
+        });
   }
 
   bool _dayEquals(NepaliDateTime? a, NepaliDateTime? b) =>
@@ -297,39 +300,35 @@ class Event {
   Event({required this.date});
 }
 
-
 List<NepaliDateTime> getUpdatedDates(List<String> dates, int period_length) {
   List<NepaliDateTime> updatedDates = [];
   for (var date in dates) {
     final NepaliDateTime parsedDate = NepaliDateTime.parse(date);
     updatedDates.add(parsedDate);
-    for (var i=0; i<period_length; i++)
-    {
-      final NepaliDateTime updatedDate1 = parsedDate.add(
-           Duration(days: i));
+    for (var i = 0; i < period_length; i++) {
+      final NepaliDateTime updatedDate1 = parsedDate.add(Duration(days: i));
       updatedDates.add(updatedDate1);
     }
   }
   return updatedDates;
 }
 
-  List<Event> getevents(List<NepaliDateTime> day){
+List<Event> getevents(List<NepaliDateTime> day) {
   final List<Event> events = day.map((i) {
-  return Event(
-    date: i,
-    // eventTitles: ['period day'],
-  );
-}).toList();
+    return Event(
+      date: i,
+      // eventTitles: ['period day'],
+    );
+  }).toList();
   return events;
-  }
-
+}
 
 Future<List<String>> retrievePeriodDates(String? email) async {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final DocumentReference<Map<String, dynamic>> documentReference =
-  _db.collection('User Details').doc(email);
+      _db.collection('User Details').doc(email);
   final DocumentSnapshot<Map<String, dynamic>> snapshot =
-  await documentReference.get();
+      await documentReference.get();
 
   final Map<String, String> periodDate = {};
   if (snapshot.exists) {
@@ -346,20 +345,21 @@ Future<List<String>> retrievePeriodDates(String? email) async {
   List<String> a = ['a', 'b'];
   return a;
 }
+
 Future<String> retrievePeriodLength(String? email) async {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
-  final DocumentReference<Map<String, dynamic>> documentReference = _db
-      .collection('User Details').doc(email);
-  final DocumentSnapshot<
-      Map<String, dynamic>> snapshot = await documentReference.get();
+  final DocumentReference<Map<String, dynamic>> documentReference =
+      _db.collection('User Details').doc(email);
+  final DocumentSnapshot<Map<String, dynamic>> snapshot =
+      await documentReference.get();
 
   if (snapshot.exists) {
     final Map<String, dynamic> data = snapshot.data()!;
     final String name = data['Period Length'] as String;
-    print('User name is: $name');
+    //print('User name is: $name');
     return name;
   } else {
-    print('User not found');
+    //print('User not found');
   }
   return '';
 }
